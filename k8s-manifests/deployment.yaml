@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: app
-        image: 475208936072.dkr.ecr.us-east-1.amazonaws.com/chaosops-eks-demo-app-repo   # we'll replace this with actual ECR repo URL via CI
+        image: 475208936072.dkr.ecr.us-east-1.amazonaws.com/chaosops-eks-demo-app-repo:latest   # we'll replace this with actual ECR repo URL via CI
         ports:
         - containerPort: 5000
         env:
