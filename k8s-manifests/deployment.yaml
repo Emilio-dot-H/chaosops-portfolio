@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chaosops-app
+  namespace: dev
+  labels:
+    app: chaosops-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: chaosops-app
+  template:
+    metadata:
+      labels:
+        app: chaosops-app
+    spec:
+      containers:
+      - name: app
+        image: <ECR_REPO_URL>:latest   # we'll replace this with actual ECR repo URL via CI
+        ports:
+        - containerPort: 5000
+        env:
+        - name: FLASK_ENV
+          value: "production"
+        # Optionally, we could add resources or liveness probes here

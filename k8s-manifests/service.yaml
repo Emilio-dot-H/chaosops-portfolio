@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: chaosops-service
+  namespace: dev
+spec:
+  selector:
+    app: chaosops-app
+  ports:
+  - port: 80
+    targetPort: 5000
+  type: LoadBalancer

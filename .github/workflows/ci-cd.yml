@@ -1,0 +1,76 @@
+name: CI-CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy to EKS
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v3
+      with:
+        persist-credentials: false  # we'll use our own git commands for pushing
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.9"
+
+    - name: Install AWS CLI
+      run: |
+        sudo apt-get update && sudo apt-get install -y awscli
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    - name: Log in to Amazon ECR
+      run: |
+        aws ecr get-login-password --region $AWS_REGION | \
+         docker login --username AWS --password-stdin $ECR_REPOSITORY
+
+    - name: Build Docker Image
+      run: |
+        docker build -t $ECR_REPOSITORY:latest ./app
+        # Tag the image with the Git commit SHA (short)
+        COMMIT_SHA=$(echo $GITHUB_SHA | cut -c1-7)
+        docker tag $ECR_REPOSITORY:latest $ECR_REPOSITORY:$COMMIT_SHA
+        echo "Commit SHA tag: $COMMIT_SHA"
+
+    - name: Push Docker Image to ECR
+      run: |
+        # Push both tags (latest and commit-specific)
+        COMMIT_SHA=$(echo $GITHUB_SHA | cut -c1-7)
+        docker push $ECR_REPOSITORY:latest
+        docker push $ECR_REPOSITORY:$COMMIT_SHA
+
+    - name: Update Kubernetes manifest with new image
+      run: |
+        COMMIT_SHA=$(echo $GITHUB_SHA | cut -c1-7)
+        # Use sed to replace the image tag in deployment.yaml
+        sed -i "s|image: .*$|image: $ECR_REPOSITORY:$COMMIT_SHA|g" k8s-manifests/deployment.yaml
+        echo "Updated manifest image tag to $COMMIT_SHA"
+        # Optional: show diff for debugging
+        grep "image:" k8s-manifests/deployment.yaml
+
+    - name: Commit and Push manifest changes
+      env:
+        CI_COMMIT_MSG: ${{ github.event.head_commit.message }}
+      run: |
+        git config --local user.name "Github CI"
+        git config --local user.email "actions@github.com"
+        git add k8s-manifests/deployment.yaml
+        # Amend commit message to indicate deployment (or use same commit message)
+        git commit -m "Deploy image $ECR_REPOSITORY:$COMMIT_SHA [ci skip]" -m "$CI_COMMIT_MSG"
+        git push origin HEAD:main
