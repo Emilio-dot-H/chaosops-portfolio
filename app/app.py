@@ -16,7 +16,7 @@ def hello():
 @app.route("/chaos")
 def chaos():
     # Simulate an anomalously slow request or error
-    proc_time = random.randint(1000, 2000)  # 1 to 2 seconds delay (anomaly)
+    proc_time = random.randint(1000, 2500)  # 1 to 2 seconds delay (anomaly)
     time.sleep(proc_time / 1000.0)
     # 50% of the time, return error to simulate chaos
     if random.random() < 0.5:
