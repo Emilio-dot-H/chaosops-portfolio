@@ -67,12 +67,12 @@ jobs:
         grep "image:" k8s-manifests/deployment.yaml
 
     - name: Commit and Push manifest changes
-      env:
-        CI_COMMIT_MSG: ${{ github.event.head_commit.message }}
+      env: CI_COMMIT_MSG: ${{ github.event.head_commit.message }}
       run: |
-        git config --local user.name "Github CI"
-        git config --local user.email "actions@github.com"
+        git config user.name "Github CI"
+        git config user.email "actions@github.com"
         git add k8s-manifests/deployment.yaml
-        # Amend commit message to indicate deployment (or use same commit message)
-        git commit -m "Deploy image $ECR_REPOSITORY:$COMMIT_SHA [ci skip]" -m "$CI_COMMIT_MSG"
-        git push origin HEAD:main
+        git commit -m "Deploy image $ECR_REPOSITORY:$COMMIT_SHA [ci skip]" -m "$CI_COMMIT_MSG" || echo "No changes to commit"
+    
+        git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+        git push origin HEAD:master
