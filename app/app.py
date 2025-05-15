@@ -11,7 +11,7 @@ def hello():
     proc_time = random.randint(50, 150)
     time.sleep(proc_time / 1000.0)  # sleep for that many milliseconds
     app.logger.info(f"Handled / in {proc_time}ms")
-    return f"Hello, world! - {proc_time}", 200
+    return f"Hello, world! Success - {proc_time}", 200
 
 @app.route("/chaos")
 def chaos():
