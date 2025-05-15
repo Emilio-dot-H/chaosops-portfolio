@@ -21,10 +21,10 @@ def chaos():
     # 50% of the time, return error to simulate chaos
     if random.random() < 0.5:
         app.logger.error(f"Chaos endpoint error! Took {proc_time}ms")
-        return "Something went wrong!\n", 500
+        return f"Something went wrong! Took {proc_time}ms\n", 500
     else:
         app.logger.info(f"Chaos endpoint slow response: {proc_time}ms")
-        return "Chaos handled slowly.\n", 200
+        return f"Chaos handled slowly. Took {proc_time}ms\n", 200
 
 if __name__ == "__main__":
     # Bind to port 5000 on all interfaces
