@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: app
-        image: 475208936072.dkr.ecr.us-east-1.amazonaws.com/chaosops-eks-demo-app-repo:7eaa5ae
+        image: 475208936072.dkr.ecr.us-east-1.amazonaws.com/chaosops-eks-demo-app-repo:399df9c
         ports:
         - containerPort: 5000
         env:
